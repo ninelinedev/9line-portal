@@ -50,7 +50,7 @@ export function loadAndValidateConfig<T extends z.ZodRawShape>(
     if (error instanceof z.ZodError) {
       console.warn("⚠️ MCP configuration not found - MCP features will be disabled");
       console.warn("Add these variables to .env.local to enable MCP:");
-      error.errors.forEach((err: z.ZodIssue) => {
+      error.issues.forEach((err: z.ZodIssue) => {
         console.warn(`  - ${err.path.join('.')}`);
       });
     } else {

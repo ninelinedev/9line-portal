@@ -1,20 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MCPClient } from '@/lib/mcp/ai-client';
+import { modelMessageSchema } from 'ai';
+import { z } from 'zod';
+
+const chatInput = z.object({
+  message: z.string().min(1),
+  externalUserId: z.string().min(1),
+  conversationHistory: z.array(modelMessageSchema).default([]),
+});
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { message, externalUserId, conversationHistory = [] } = body;
+    const input = chatInput.safeParse(await request.json().catch(() => null));
 
-    if (!message || !externalUserId) {
+    if (!input.success) {
       return NextResponse.json(
-        { error: 'Message and external user ID are required' },
+        { error: 'A message, external user ID, and valid conversation history are required' },
         { status: 400 }
       );
     }
+
+    const { message, externalUserId, conversationHistory } = input.data;
 
     // Initialize MCP client
     const mcpClient = new MCPClient({
